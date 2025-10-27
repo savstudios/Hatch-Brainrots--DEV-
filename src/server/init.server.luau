@@ -6,7 +6,7 @@ local spawnService = require(services.SpawnService.SpawnServiceServer)
 
 spawnService:Init()
 
-while task.wait(0.5) do
+while task.wait(spawnService.SPAWN_COOLDOWN) do
 	spawnService:SelectEggRandom()
 	
 	spawnService:SpawnEgg()
