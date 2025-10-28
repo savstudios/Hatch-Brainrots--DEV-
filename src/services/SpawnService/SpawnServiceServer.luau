@@ -1,8 +1,10 @@
 --!strict
 
-local EggInfo = require(script.Parent.Parent.EggInfo)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+
+local EggInfo = require(script.Parent.Parent.EggInfo)
+local EggServiceServer = require(script.Parent.Parent.EggService.EggServiceServer)
 
 local SPAWN_COOLDOWN = 4
 local SpawnServiceServer = {}
@@ -30,10 +32,10 @@ function SpawnServiceServer.SelectEggRandom(self: SpawnServiceServer)
 	local randomWeight = math.random() * self.eggWeights
 	local weight = 0
 	
-	for _, egg in pairs(EggInfo.Info) do
+	for eggName, egg in pairs(EggInfo.Info) do
 		weight += egg.Weight
 		if randomWeight <= weight then
-			self:AddEggToQueue(egg.Name)
+			self:AddEggToQueue(eggName)
 			break
 		end
 	end
@@ -65,12 +67,16 @@ function SpawnServiceServer.DisplayEgg(self: SpawnServiceServer, eggType: string
 	egg.Parent = workspace.ConveyorEggs
 	egg:PivotTo(conveyor.Start.WorldCFrame)
 
+	-- display
+	EggServiceServer:SetupEgg(eggType, egg)
+
 	-- tweening
 	local dummyCFrame = Instance.new("CFrameValue")
+	local swayOffset = math.random(1, 100) / 100
 	dummyCFrame.Value = egg:GetPivot()
 
 	dummyCFrame:GetPropertyChangedSignal("Value"):Connect(function()
-		egg:PivotTo(dummyCFrame.Value)
+		egg:PivotTo(dummyCFrame.Value * CFrame.Angles(math.sin((tick() + swayOffset) * 2) / 3, 0, 0))
 	end)
 
 	local tweenInfo = TweenInfo.new(50, Enum.EasingStyle.Linear)
